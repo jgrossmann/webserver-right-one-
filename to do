@@ -1,0 +1,9 @@
+to do
+producer hand off socket to worker
+figure out how to hand off socket
+check mallocs and frees
+error codes
+check pointer with array[]
+put in a flag for numjobs?
+optimize for concurrency if time allows
+
