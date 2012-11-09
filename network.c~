@@ -110,6 +110,7 @@ int getrequest(int sock, char *reqbuffer, int buffsize) {
                 char *first_space = index(t, ' ');
                 if (first_space != NULL) {
                     first_space += 1;
+			printf("each string: %s\n",first_space);
                     strncpy(reqbuffer, first_space, MIN(buffsize, (proto - first_space - 1)));
                     returnval = 0;
                 }
@@ -117,6 +118,7 @@ int getrequest(int sock, char *reqbuffer, int buffsize) {
         } 
         t = strtok(NULL, newline);
     }
+	printf("inside network.c: %s\n",reqbuffer);
     return returnval;
 }
 

@@ -16,10 +16,6 @@
 #include <arpa/inet.h>
 #include <poll.h>
 #include <errno.h>
-#include <signal.h>
-#include <sys/stat.h>
-
-
 
 int prepare_server_socket(unsigned short);
 int senddata(int, const char *, int);
