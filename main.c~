@@ -123,6 +123,7 @@ void handlerequest(char *address, struct sock *cursock, struct sockaddr_in clien
 	}
 	client_response = createresponse(response, filepath, size, client_address); //creates response to GET request
 	size = (int) sizeof(char)*strlen(client_response);
+	printf("%s\n",client_response);
 	int senddata_ret = senddata(cursock->socket, client_response, size); //sends response made in createresponse
 	Log(client_address, address, response, client_response);//logs interaction in weblog.txt
 	free(client_response);
@@ -162,10 +163,12 @@ void *consumer(void *arg) {   //thread start function
 		pthread_mutex_lock(&mutex);
 		while(socklist->numjobs == 0 || !still_running) { //thread wait loop
 			if(!still_running) { //only happens when producer is ending and want threads to end
+				pthread_mutex_unlock(&mutex);
 				return NULL;
 			}
 			pthread_cond_wait(&jobready,&mutex); //wait for signal for job from producer
 			if(!still_running) {//only happens when producer is ending and want threads to end
+				pthread_mutex_unlock(&mutex);
 				return NULL;
 			}
 		}
@@ -244,6 +247,7 @@ void runserver(int numthreads, unsigned short serverport) {
             struct sock *temp;
             fprintf(stderr, "Got connection from %s:%d\n", inet_ntoa(client_address.sin_addr), ntohs(client_address.sin_port));
 			pthread_mutex_lock(socklist->joblist_lock);
+		// assigns new socket to socket list
 			if(sock_head->next == NULL) { 
 				sock_head->socket = new_sock;
 				sock_head->address = client_address;
@@ -259,9 +263,9 @@ void runserver(int numthreads, unsigned short serverport) {
 				newsocket->previous = temp;
 				newsocket->status = 'y';
 			}
-			socklist->numjobs++;
+			socklist->numjobs++; //ensures threads that pass condition variable have a job to recieve
 			pthread_mutex_unlock(socklist->joblist_lock);
-			pthread_cond_signal(&jobready);
+			pthread_cond_signal(&jobready); //signals to a thread that there is a new socket
 
            ////////////////////////////////////////////////////////
            /* You got a new connection.  Hand the connection off
@@ -281,7 +285,7 @@ void runserver(int numthreads, unsigned short serverport) {
 	i = 0;
 	void *status;
 	for(;i<numthreads;i++) {
-		pthread_join(cid[i], &status);
+		pthread_join(cid[i], &status); //collects dead threads
 	}
 	free_socklist(socklist);
 	pthread_mutex_destroy(&mutex);
@@ -295,7 +299,7 @@ int main(int argc, char **argv) {
     int num_threads = 1;
 
     int c;
-    while (-1 != (c = getopt(argc, argv, "hp:"))) {
+    while (-1 != (c = getopt(argc, argv, "p:t:h"))) {
         switch(c) {
             case 'p':
                 port = atoi(optarg);

@@ -162,10 +162,12 @@ void *consumer(void *arg) {   //thread start function
 		pthread_mutex_lock(&mutex);
 		while(socklist->numjobs == 0 || !still_running) { //thread wait loop
 			if(!still_running) { //only happens when producer is ending and want threads to end
+				pthread_mutex_unlock(&mutex);
 				return NULL;
 			}
 			pthread_cond_wait(&jobready,&mutex); //wait for signal for job from producer
 			if(!still_running) {//only happens when producer is ending and want threads to end
+				pthread_mutex_unlock(&mutex);
 				return NULL;
 			}
 		}
@@ -296,7 +298,7 @@ int main(int argc, char **argv) {
     int num_threads = 1;
 
     int c;
-    while (-1 != (c = getopt(argc, argv, "hp:"))) {
+    while (-1 != (c = getopt(argc, argv, "p:t:h"))) {
         switch(c) {
             case 'p':
                 port = atoi(optarg);

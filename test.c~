@@ -28,7 +28,7 @@ int main(void) {
 	char *b = test();
 	char *c = strdup(b);
 	printf("%s\n",b);
-	free(b); free(c);
+	free(b); //free(c);
 return 0;
 	
 }
